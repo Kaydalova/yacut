@@ -4,7 +4,7 @@ import string
 from flask import abort, flash, redirect, render_template
 
 from . import app, db
-from .constants import NUMBERS, SHORT_LENGTH, NOT_UNIQUE_CUSTOM_ID_MESSAGE
+from .constants import NUMBERS, SHORT_LENGTH
 from .forms import URLMapForm
 from .models import URLMap
 
