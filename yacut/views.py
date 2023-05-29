@@ -1,35 +1,9 @@
-import random
-import string
-
 from flask import abort, flash, redirect, render_template
 
 from . import app, db
-from .constants import NUMBERS, SHORT_LENGTH
+from .constants import (NOT_UNIQUE_CUSTOM_ID_MESSAGE_EXCITED)
 from .forms import URLMapForm
 from .models import URLMap
-
-
-def check_unique_url(short):
-    """
-    Функция проверяет существует ли в базе запись
-    с указанной короткой ссылкой.
-    """
-    if URLMap.query.filter_by(short=short).first() is None:
-        return True
-    return False
-
-
-def get_unique_short_id():
-    """
-    Функция генирирует уникальную короткую ссылку.
-    Ссылка может состоять только из латинских букв
-    и цифр от 0 до 9.
-    """
-    population = string.ascii_letters + NUMBERS
-    while True:
-        short = "".join(random.sample(population, SHORT_LENGTH))
-        if check_unique_url(short):
-            return short
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -40,11 +14,11 @@ def index_view():
     form = URLMapForm()
     if form.validate_on_submit():
         if not form.custom_id.data:
-            short = get_unique_short_id()
+            short = URLMap.get_unique_short_id()
         else:
             short = form.custom_id.data
-            if not check_unique_url(short):
-                flash(f'Имя {short} уже занято!')
+            if not URLMap.check_unique_url(short):
+                flash(NOT_UNIQUE_CUSTOM_ID_MESSAGE_EXCITED.format(custom_id=short))
                 return render_template('yacut.html', form=form)
         urlmap = URLMap(
             original=form.original_link.data,

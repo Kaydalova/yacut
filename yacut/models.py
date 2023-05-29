@@ -1,28 +1,65 @@
+import random
 from datetime import datetime
 
 from flask import url_for
 
 from yacut import db
 
+from .constants import (MAX_ORIGINAL_LENGTH, MAX_SHORT_LENGTH,
+                        OUT_OF_SHORTS_MESSAGE, POPULATION_FOR_RANDOM_SHORT,
+                        SHORT_LENGTH)
+from .error_handlers import OutOfShortsException
+
 
 class URLMap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    original = db.Column(db.String(256))
-    short = db.Column(db.String(16), unique=True)
+    original = db.Column(db.String(MAX_ORIGINAL_LENGTH))
+    short = db.Column(db.String(MAX_SHORT_LENGTH), unique=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def url_to_dict(self):
-        return dict(
-            url=self.original)
-
-    def url_and_short_to_dict(self):
+    def to_dict(self, url_only=False):
+        if url_only:
+            return dict(url=self.original)
         return {'url': self.original,
                 'short_link': url_for('index_view', _external=True) + self.short}
 
-    def from_dict(self, data):
+    @staticmethod
+    def from_dict(data):
+        """
+        Функция создает экземпляр класса URLMap
+        из переданного ей словаря data
+        """
+        urlmap = URLMap()
         model_fields_names = {
-            'url': 'original',
-            'custom_id': 'short'}
+            'url': urlmap.__table__.columns[1].name,
+            'custom_id': urlmap.__table__.columns[2].name}
         for field in ['url', 'custom_id']:
             if field in data:
-                setattr(self, model_fields_names[field], data[field])
+                setattr(urlmap, model_fields_names[field], data[field])
+        return urlmap
+
+    @staticmethod
+    def check_unique_url(short):
+        """
+        Функция проверяет существует ли в базе запись
+        с указанной короткой ссылкой.
+        """
+        if URLMap.get(short=short) is None:
+            return True
+        return False
+
+    @staticmethod
+    def get_unique_short_id():
+        """
+        Функция генирирует уникальную короткую ссылку.
+        Ссылка может состоять только из латинских букв
+        и цифр от 0 до 9.
+        """
+        short = "".join(random.sample(POPULATION_FOR_RANDOM_SHORT, SHORT_LENGTH))
+        if not URLMap.check_unique_url(short):
+            raise OutOfShortsException(OUT_OF_SHORTS_MESSAGE)
+        return short
+
+    @classmethod
+    def get(cls, **kwargs):
+        return URLMap.query.filter_by(**kwargs).first()

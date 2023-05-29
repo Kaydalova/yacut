@@ -2,11 +2,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, URLField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
-from .constants import (REGEX_FOR_SHORL_URL,
-                        LATIN_AND_NUMS_ONLY_MESSAGE,
-                        DATA_REQUIRED_MESSAGE,
-                        SUBMIT_MESSAGE,
-                        ORIGINAL_LINK, CUSTOM_ID)
+from .constants import (CUSTOM_ID, DATA_REQUIRED_MESSAGE,
+                        LATIN_AND_NUMS_ONLY_MESSAGE, ORIGINAL_LINK,
+                        REGEX_FOR_SHORL_URL, SUBMIT_MESSAGE)
 
 
 class URLMapForm(FlaskForm):
