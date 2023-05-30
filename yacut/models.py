@@ -20,8 +20,9 @@ class URLMap(db.Model):
     def to_dict(self, url_only=False):
         if url_only:
             return dict(url=self.original)
-        return {'url': self.original,
-                'short_link': url_for('index_view', _external=True) + self.short}
+        return {
+            'url': self.original,
+            'short_link': url_for('index_view', _external=True) + self.short}
 
     @staticmethod
     def from_dict(data):
@@ -39,16 +40,6 @@ class URLMap(db.Model):
         return urlmap
 
     @staticmethod
-    def check_unique_url(short):
-        """
-        Функция проверяет существует ли в базе запись
-        с указанной короткой ссылкой.
-        """
-        if URLMap.get(short=short) is None:
-            return True
-        return False
-
-    @staticmethod
     def get_unique_short_id():
         """
         Функция генирирует уникальную короткую ссылку.
@@ -56,10 +47,14 @@ class URLMap(db.Model):
         и цифр от 0 до 9.
         """
         short = "".join(random.sample(POPULATION_FOR_RANDOM_SHORT, SHORT_LENGTH))
-        if not URLMap.check_unique_url(short):
+        if URLMap.get(short=short) is not None:
             raise OutOfShortsException(OUT_OF_SHORTS_MESSAGE)
         return short
 
     @classmethod
     def get(cls, **kwargs):
         return URLMap.query.filter_by(**kwargs).first()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()

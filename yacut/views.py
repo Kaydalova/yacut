@@ -1,7 +1,7 @@
 from flask import abort, flash, redirect, render_template
 
-from . import app, db
-from .constants import (NOT_UNIQUE_CUSTOM_ID_MESSAGE_EXCITED)
+from . import app
+from .constants import NOT_UNIQUE_CUSTOM_ID_MESSAGE_EXCITED
 from .forms import URLMapForm
 from .models import URLMap
 
@@ -17,14 +17,15 @@ def index_view():
             short = URLMap.get_unique_short_id()
         else:
             short = form.custom_id.data
-            if not URLMap.check_unique_url(short):
+            if URLMap.get(short=short) is not None:
                 flash(NOT_UNIQUE_CUSTOM_ID_MESSAGE_EXCITED.format(custom_id=short))
                 return render_template('yacut.html', form=form)
-        urlmap = URLMap(
-            original=form.original_link.data,
-            short=short)
-        db.session.add(urlmap)
-        db.session.commit()
+        data = {
+            'url': form.original_link.data,
+            'custom_id': short
+        }
+        urlmap = URLMap.from_dict(data)
+        urlmap.save()
         return render_template('yacut.html', form=form, short=short)
     return render_template('yacut.html', form=form)
 
@@ -34,7 +35,7 @@ def redirect_view(short):
     """
     View функция для редиректа по адресу оригинальной ссылки
     """
-    urlmap = URLMap.query.filter_by(short=short).first()
+    urlmap = URLMap.get(short=short)
     if urlmap is None:
         abort(404)
     return redirect(urlmap.original)

@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
-from . import app, db
+from . import app
 from .constants import (EMPTY_BODY_MESSAGE, ID_NOT_FOUND_MESSAGE,
                         INVALID_CUSTOM_ID_MESSAGE, INVALID_URL_MESSAGE,
                         NO_URL_MESSAGE, NOT_UNIQUE_CUSTOM_ID_MESSAGE,
@@ -30,7 +30,7 @@ def validate_attributes(data):
 
     if 'custom_id' in data:
         short = data.get('custom_id')
-        if not URLMap.check_unique_url(short):
+        if URLMap.get(short=short):
             raise InvalidAPIUsage(
                 NOT_UNIQUE_CUSTOM_ID_MESSAGE.format(custom_id=short),
                 HTTPStatus.BAD_REQUEST)
@@ -55,8 +55,7 @@ def get_short():
         raise InvalidAPIUsage(EMPTY_BODY_MESSAGE)
     data = validate_attributes(data)
     urlmap = URLMap.from_dict(data)
-    db.session.add(urlmap)
-    db.session.commit()
+    urlmap.save()
     return jsonify(urlmap.to_dict()), HTTPStatus.CREATED
 
 
@@ -65,7 +64,7 @@ def get_original_url(short_id):
     """
     Получение оригинальной ссылки по короткому идентификатору.
     """
-    original_url = URLMap.query.filter_by(short=short_id).first()
+    original_url = URLMap.get(short=short_id)
     if original_url is None:
         raise InvalidAPIUsage(
             ID_NOT_FOUND_MESSAGE,

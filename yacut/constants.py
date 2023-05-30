@@ -3,6 +3,7 @@ import string
 SHORT_LENGTH = 6
 POPULATION_FOR_RANDOM_SHORT = string.ascii_letters + "0123456789"
 MAX_SHORT_LENGTH = 16
+MIN_SHORT_LENGTH = 2
 MAX_ORIGINAL_LENGTH = 512
 REGEX_FOR_SHORL_URL = r'^[a-zA-Z\d]{1,16}$'
 REGEX_FOR_ORIGINAL_URL = r'((http|https)?:\/\/[\S]+)'
