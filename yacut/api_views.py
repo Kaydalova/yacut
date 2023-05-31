@@ -34,7 +34,7 @@ def validate_attributes(data):
             raise InvalidAPIUsage(
                 NOT_UNIQUE_CUSTOM_ID_MESSAGE.format(custom_id=short),
                 HTTPStatus.BAD_REQUEST)
-        if short is None or short == "":
+        if not short or short == "":
             data['custom_id'] = URLMap.get_unique_short_id()
         elif not re.match(REGEX_FOR_SHORL_URL, short):
             raise InvalidAPIUsage(

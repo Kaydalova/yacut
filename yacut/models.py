@@ -4,7 +4,6 @@ from datetime import datetime
 from flask import url_for
 
 from yacut import db
-
 from .constants import (MAX_ORIGINAL_LENGTH, MAX_SHORT_LENGTH,
                         OUT_OF_SHORTS_MESSAGE, POPULATION_FOR_RANDOM_SHORT,
                         SHORT_LENGTH)
